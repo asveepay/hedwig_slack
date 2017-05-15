@@ -72,6 +72,7 @@ defmodule Hedwig.Adapters.Slack do
       robot: robot,
       room: msg["channel"],
       text: msg["text"],
+      attachment: msg["attachment"],
       type: "message",
       user: %Hedwig.User{
         id: user,
@@ -146,7 +147,7 @@ defmodule Hedwig.Adapters.Slack do
   end
 
   defp slack_message(%Hedwig.Message{} = msg, overrides \\ %{}) do
-    Map.merge(%{channel: msg.room, text: msg.text, type: msg.type}, overrides)
+    Map.merge(%{channel: msg.room, text: msg.text, attachment: msg.attachment type: msg.type}, overrides)
   end
 
   defp put_channel_user(channels, channel_id, user_id) do
