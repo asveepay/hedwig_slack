@@ -35,6 +35,12 @@ defmodule Hedwig.Adapters.Slack do
     {:noreply, state}
   end
 
+  def handle_cast({:reply_with_attachment, %{user: user, text: text, attachment: attachment} = msg}, %{conn: conn, users: _users} = state) do
+    msg = %{msg | text: "<@#{user.id}|#{user.name}>: #{text}", attachment: attachment}
+    Connection.ws_send(conn, slack_message(msg))
+    {:noreply, state}
+  end
+
   def handle_cast({:emote, %{text: _text} = msg}, %{conn: conn} = state) do
     Connection.ws_send(conn, slack_message(msg, %{subtype: "me_message"}))
     {:noreply, state}
@@ -79,7 +85,6 @@ defmodule Hedwig.Adapters.Slack do
         name: users[user]["name"]
       }
     }
-
     if msg.text do
       :ok = Hedwig.Robot.handle_in(robot, msg)
     end
@@ -147,7 +152,7 @@ defmodule Hedwig.Adapters.Slack do
   end
 
   defp slack_message(%Hedwig.Message{} = msg, overrides \\ %{}) do
-    Map.merge(%{channel: msg.room, text: msg.text, attachment: msg.attachment type: msg.type}, overrides)
+    Map.merge(%{channel: msg.room, text: msg.text, attachment: msg.attachment, type: msg.type}, overrides)
   end
 
   defp put_channel_user(channels, channel_id, user_id) do
